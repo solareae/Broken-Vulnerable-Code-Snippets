@@ -5,8 +5,14 @@ const { exec, spawn }  = require('child_process');
 
 
 router.post('/ping', (req,res) => {
-    exec(`${req.body.url}`, (error) => {
-        if (error) {
+    const url = req.body.url;
+    // Validate input is a valid hostname/IP (alphanumeric, dots, hyphens only)
+    if (!url || !/^[a-zA-Z0-9][a-zA-Z0-9.-]*[a-zA-Z0-9]$/.test(url)) {
+        return res.send('error');
+    }
+    const pingProcess = spawn('ping', ['-c', '1', url]);
+    pingProcess.on('close', (code) => {
+        if (code !== 0) {
             return res.send('error');
         }
         res.send('pong')
